@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "LinkedIn Hiring Post Collector",
   "version": "4.2",
+  "update_url": "https://autoapply.ranyor.com/extension/update.xml",
   "description": "Collect LinkedIn posts that contain hiring keywords and export as JSON. Works on feed and search result pages.",
   "permissions": [
     "activeTab",
