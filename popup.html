@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>LinkedIn Hiring Collector</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 380px;
+      min-height: 500px;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #0077B5 0%, #004182 100%);
+      padding: 18px 20px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-link {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px dotted rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+    }
+
+    .header-link:hover {
+      color: #fff;
+      border-bottom-style: solid;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* ── Body ── */
+    .body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px 6px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0077B5;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      color: #6b7280;
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Target count input ── */
+    .count-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .count-input-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .count-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      border-radius: 6px;
+      color: #4b5563;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .count-btn:hover {
+      border-color: #0077B5;
+      color: #0077B5;
+    }
+
+    .count-input {
+      width: 48px;
+      text-align: center;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 5px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .count-input:focus {
+      border-color: #0077B5;
+    }
+
+    .quick-select {
+      display: flex;
+      gap: 4px;
+      margin-left: 4px;
+    }
+
+    .qs-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      color: #4b5563;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .qs-btn:hover {
+      border-color: #0077B5;
+      color: #0077B5;
+      background: #f0f9ff;
+    }
+
+    /* ── Keyword section ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #4b5563;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+
+    .keyword-input-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .keyword-input {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #1f2937;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .keyword-input:focus {
+      border-color: #0077B5;
+      box-shadow: 0 0 0 2px rgba(0, 119, 181, 0.1);
+    }
+
+    .keyword-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .btn-add {
+      background: #0077B5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      line-height: 1;
+    }
+
+    .btn-add:hover {
+      background: #005f8e;
+      transform: scale(1.05);
+    }
+
+    .keyword-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-height: 28px;
+    }
+
+    .keyword-tag {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: default;
+    }
+
+    .keyword-tag .remove {
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .keyword-tag .remove:hover {
+      color: #ef4444;
+    }
+
+    .no-keywords {
+      font-size: 11px;
+      color: #6b7280;
+      font-style: italic;
+      padding: 3px 0;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+
+    .btn-collect {
+      background: linear-gradient(135deg, #00c853, #00897b);
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 200, 83, 0.25);
+    }
+
+    .btn-collect:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 200, 83, 0.35);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #4b5563;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #f9fafb;
+      color: #1f2937;
+      border-color: #9ca3af;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* ── Status ── */
+    .status {
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.4;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .status.success {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .status.error {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+    }
+
+    .status.info {
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      color: #075985;
+    }
+
+    .status.warning {
+      background: #fef9c3;
+      border: 1px solid #fde047;
+      color: #854d0e;
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      height: 3px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0077B5, #00c853);
+      border-radius: 2px;
+      animation: progressAnim 2s ease-in-out infinite;
+    }
+
+    @keyframes progressAnim {
+      0% {
+        width: 0%;
+        margin-left: 0;
+      }
+
+      50% {
+        width: 60%;
+        margin-left: 20%;
+      }
+
+      100% {
+        width: 0%;
+        margin-left: 100%;
+      }
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      font-size: 10px;
+      color: #3a4a6b;
+      text-align: center;
+      padding: 0 0 4px;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ── Send section ── */
+    .send-section {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .send-section .section-label {
+      margin-bottom: 8px;
+      color: #0077B5;
+    }
+
+    .email-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .email-input {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #1f2937;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .email-input:focus {
+      border-color: #0077B5;
+      box-shadow: 0 0 0 2px rgba(0, 119, 181, 0.1);
+    }
+
+    .email-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, #00897b, #00695c);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-send:hover:not(:disabled) {
+      background: linear-gradient(135deg, #00a896, #00897b);
+      transform: translateY(-1px);
+    }
+
+    .btn-send:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .send-status {
+      margin-top: 8px;
+      font-size: 12px;
+      border-radius: 7px;
+      padding: 7px 10px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .send-status.success {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+      display: block;
+    }
+
+    .send-status.error {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      display: block;
+    }
+
+    .send-status.info {
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      color: #075985;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      AutoApply <span style="font-size:10px; opacity:0.9; font-weight:400; margin-left:4px; color:#e0f2fe;">powered by
+        ranyor</span>
+    </div>
+    <div class="header-subtitle">
+      <span>AI Hiring Post Collector</span>
+      <a href="https://autoapply.ranyor.com/login" target="_blank" class="header-link">Go to Console &rarr;</a>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="statHiring">—</div>
+        <div class="stat-label">Hiring</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statSkipped">—</div>
+        <div class="stat-label">Skipped</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statScrolls">—</div>
+        <div class="stat-label">Scrolls</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statKeywords">34</div>
+        <div class="stat-label">Keywords</div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill"></div>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status"></div>
+
+    <div class="divider"></div>
+
+    <!-- Target count selector -->
+    <div class="target-section">
+      <div class="section-label">🎯 Posts to Collect (max 50)</div>
+      <div class="count-row">
+        <div class="count-input-group">
+          <button class="count-btn" id="decCount">−</button>
+          <input type="number" id="targetCountInput" class="count-input" value="10" min="1" max="50">
+          <button class="count-btn" id="incCount">+</button>
+        </div>
+        <div class="quick-select">
+          <button class="qs-btn" data-val="10">10</button>
+          <button class="qs-btn" data-val="20">20</button>
+          <button class="qs-btn" data-val="30">30</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collect button -->
+    <button id="collectBtn" class="btn btn-collect">
+      🚀 Collect Hiring Posts
+    </button>
+
+    <!-- Custom Keywords -->
+    <div>
+      <div class="section-label">➕ Custom Keywords</div>
+      <div class="keyword-input-row">
+        <input type="text" class="keyword-input" id="keywordInput" placeholder="e.g. software engineer, remote..."
+          maxlength="50" />
+        <button class="btn-add" id="addKeywordBtn" title="Add keyword">+</button>
+      </div>
+      <div style="margin-top: 8px;">
+        <div class="keyword-tags" id="keywordTags">
+          <span class="no-keywords" id="noKeywordsMsg">No custom keywords — using 30 built-in hiring keywords</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Download / View -->
+    <div class="btn-row">
+      <button id="downloadBtn" class="btn btn-secondary" disabled>
+        💾 Download JSON
+      </button>
+      <button id="viewBtn" class="btn btn-secondary" disabled>
+        👁 View Posts
+      </button>
+    </div>
+
+    <!-- Clear -->
+    <button id="clearBtn" class="btn btn-secondary" disabled style="font-size:12px; padding:8px;">
+      🗑 Clear Stored Data
+    </button>
+
+    <div class="divider"></div>
+
+    <!-- Process Jobs (Bottom) -->
+    <div class="send-section">
+      <div class="section-label" style="color:#0077B5;">📤 Process Jobs</div>
+
+      <div style="margin-bottom: 8px;">
+        <label for="roleInput"
+          style="font-size: 11px; font-weight: 600; color: #4b5563; display: block; margin-bottom: 4px;">🎯 Target
+          Role</label>
+        <input type="text" id="roleInput" placeholder="e.g. Software Engineer" value="Software Engineer ww"
+          style="font-size: 12px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; box-sizing: border-box; transition:border-color 0.2s;">
+      </div>
+
+      <div class="email-row">
+        <input type="email" class="email-input" id="senderEmail" placeholder="your@email.com" maxlength="100" />
+        <button class="btn-send" id="sendBtn" disabled>
+          <span id="sendBtnIcon">🚀</span> Process
+        </button>
+      </div>
+
+      <button class="btn btn-secondary" id="sendEmailsBtn"
+        style="margin-top: 8px; font-size: 13px; padding: 8px; width:100%;">
+        📧 Send Pending Emails
+      </button>
+
+      <div class="send-status" id="sendStatus"></div>
+    </div>
+
+    <div class="footer">
+      ⚠️ Navigate to LinkedIn feed or search results before collecting
+      <div style="margin-top: 12px; opacity: 0.9; font-weight: 500;">
+        Created by Shyam Kuntal<br>
+        <div style="display: flex; justify-content: center; gap: 12px; margin-top: 4px;">
+          <a href="https://www.linkedin.com/in/shyam-kuntal-8762971a0/" target="_blank"
+            style="color: #0077b5; text-decoration: none;">LinkedIn</a>
+          <span style="color: #cbd5e1;">|</span>
+          <a href="https://github.com/shyamkuntal" target="_blank"
+            style="color: #333; text-decoration: none;">GitHub</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
