@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function () {
       showSendStatus('🔄 Triggering email send...', 'info');
 
       try {
-        const res = await fetch('http://localhost:5001/api/send-emails', {
+        const res = await fetch('http://api.autoapply.ranyor.com/api/send-emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function () {
     showSendStatus('🔄 Processing Jobs...', 'info');
 
     try {
-      const res = await fetch('http://localhost:5001/api/process-jobs', {
+      const res = await fetch('http://api.autoapply.ranyor.com/api/process-jobs', {
         method: 'POST',
         body: formData
         // Do NOT set Content-Type header for FormData, browser sets it with boundary
