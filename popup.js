@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function () {
     showSendStatus('🔄 Processing Jobs...', 'info');
 
     try {
-      const res = await fetch('https://localhost:5001/api/process-jobs', {
+      const res = await fetch('https://api.autoapply.ranyor.com/api/process-jobs', {
         method: 'POST',
         body: formData
       });

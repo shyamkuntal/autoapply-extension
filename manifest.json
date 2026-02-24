@@ -11,7 +11,8 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://www.linkedin.com/*"
+    "https://www.linkedin.com/*",
+    "https://api.autoapply.ranyor.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
