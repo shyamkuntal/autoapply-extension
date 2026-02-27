@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   const collectBtn = document.getElementById('collectBtn');
+  const stopBtn = document.getElementById('stopBtn');
   const downloadBtn = document.getElementById('downloadBtn');
   const viewBtn = document.getElementById('viewBtn');
   const clearBtn = document.getElementById('clearBtn');
@@ -17,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const statHiring = document.getElementById('statHiring');
   const statSkipped = document.getElementById('statSkipped');
   const statKeywords = document.getElementById('statKeywords');
+  const roleInput = document.getElementById('roleInput');
+  const locationInput = document.getElementById('locationInput');
+  const experienceInput = document.getElementById('experienceInput');
 
   let lastCollectedData = null;
   let customKeywords = [];
@@ -29,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   collectBtn.addEventListener('click', collectPosts);
+  stopBtn.addEventListener('click', stopCollection);
   downloadBtn.addEventListener('click', downloadJSON);
   viewBtn.addEventListener('click', viewPosts);
   clearBtn.addEventListener('click', clearData);
@@ -46,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function updateTargetCount(val) {
     let n = parseInt(val);
     if (isNaN(n) || n < 1) n = 1;
-    if (n > 50) n = 50;
+    // if (n > 50) n = 50;
     targetCount = n;
     targetInput.value = n;
   }
@@ -65,8 +70,11 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Email Persistence
-  chrome.storage.local.get(['savedEmail'], (res) => {
+  chrome.storage.local.get(['savedEmail', 'savedRole', 'savedLocation', 'savedExperience'], (res) => {
     if (res.savedEmail) senderEmail.value = res.savedEmail;
+    if (res.savedRole) roleInput.value = res.savedRole;
+    if (res.savedLocation) locationInput.value = res.savedLocation;
+    if (res.savedExperience) experienceInput.value = res.savedExperience;
   });
 
   senderEmail.addEventListener('input', () => {
@@ -205,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       collectBtn.disabled = true;
       collectBtn.innerHTML = '<div class="spinner"></div> Collecting...';
+      stopBtn.style.display = 'flex';
       showProgress(true);
       showStatus(`🔄 Starting auto-scroll to collect ${targetCount} hiring posts...`, 'info');
       updateStats('0', '…', '0');
@@ -307,7 +316,17 @@ document.addEventListener('DOMContentLoaded', function () {
   function resetCollectBtn() {
     collectBtn.disabled = false;
     collectBtn.innerHTML = '🚀 Collect Hiring Posts';
+    stopBtn.style.display = 'none';
     showProgress(false);
+  }
+
+  async function stopCollection() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      await chrome.tabs.sendMessage(tab.id, { action: 'stopCollect' });
+    } catch (_) { }
+    resetCollectBtn();
+    showStatus('⏹ Collection stopped.', 'warning');
   }
 
 
@@ -507,7 +526,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-  const roleInput = document.getElementById('roleInput');
+  // Persist role, location, and experience on change
+  roleInput.addEventListener('input', () => {
+    chrome.storage.local.set({ savedRole: roleInput.value.trim() });
+  });
+  locationInput.addEventListener('input', () => {
+    chrome.storage.local.set({ savedLocation: locationInput.value.trim() });
+  });
+  experienceInput.addEventListener('input', () => {
+    chrome.storage.local.set({ savedExperience: experienceInput.value.trim() });
+  });
 
   async function sendToProcess() {
 
@@ -544,6 +572,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     formData.append('email', email);
     formData.append('roleAppliedFor', role);
+    formData.append('locationFilter', locationInput.value.trim());
+    formData.append('experienceFilter', experienceInput.value.trim());
 
 
     sendBtn.disabled = true;
@@ -564,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showSendStatus(
           `✅ <strong>Processed successfully!</strong><br>
           <small style="opacity:0.8">${strippedPosts.length} posts saved. Now click 'Send Emails'.</small><br>
-          <a href="https://autoapply.ranyor.com/login" target="_blank" style="color:#166534; font-weight:600; font-size:11px;">Go to JobMatcher Console →</a>`,
+          <a href="https://autoapply.ranyor.com/login" target="_blank" style="color:#166534; font-weight:600; font-size:11px;">Go to AutoApply Console →</a>`,
           'success'
         );
       } else {

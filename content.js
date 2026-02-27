@@ -1,5 +1,6 @@
 
 window.__liCollecting = false;
+window.__liStopCollecting = false;
 
 const HIRING_KEYWORDS = [
   'hiring', 'we are hiring', "we're hiring", 'now hiring',
@@ -50,9 +51,9 @@ function findPostContainer(el) {
     if (!node || node === document.body) break;
     node = node.parentElement;
     if (!node) break;
-    const tag  = node.tagName;
+    const tag = node.tagName;
     const role = node.getAttribute('role');
-    const dataId  = node.getAttribute('data-id')  || '';
+    const dataId = node.getAttribute('data-id') || '';
     const dataUrn = node.getAttribute('data-urn') || '';
     if (dataId.includes('urn:li:activity') || dataUrn.includes('urn:li:activity')) return node;
     if (tag === 'LI' && node.closest('ul')) return node;
@@ -82,7 +83,7 @@ function findPostsViaFeedSelectors() {
     try {
       const els = document.querySelectorAll(sel);
       if (els.length > 0) return Array.from(els);
-    } catch (_) {}
+    } catch (_) { }
   }
   return [];
 }
@@ -97,7 +98,7 @@ function findPostsViaSearchSelectors() {
     try {
       const els = document.querySelectorAll(sel);
       if (els.length > 0) return Array.from(els);
-    } catch (_) {}
+    } catch (_) { }
   }
   return [];
 }
@@ -142,7 +143,7 @@ function extractDescription(container) {
         let text = el.textContent.trim().replace(/…more$/i, '').replace(/\.\.\.more$/i, '').trim();
         if (text.length > 10) return text;
       }
-    } catch (_) {}
+    } catch (_) { }
   }
   const spans = container.querySelectorAll('span[dir="ltr"]');
   for (const span of spans) {
@@ -170,7 +171,7 @@ function extractAuthor(container) {
         const text = el.textContent.trim();
         if (text && text.length > 1 && text.length < 100) return text;
       }
-    } catch (_) {}
+    } catch (_) { }
   }
   return 'Unknown Author';
 }
@@ -189,7 +190,7 @@ function extractAuthorTitle(container) {
         const text = el.textContent.trim();
         if (text && text.length > 1) return text;
       }
-    } catch (_) {}
+    } catch (_) { }
   }
   return '';
 }
@@ -205,7 +206,7 @@ function extractPostUrl(container) {
     try {
       const el = container.querySelector(sel);
       if (el && el.href && el.href.includes('linkedin.com')) return el.href;
-    } catch (_) {}
+    } catch (_) { }
   }
   return '';
 }
@@ -223,7 +224,7 @@ function extractTimestamp(container) {
         const t = el.getAttribute('datetime') || el.textContent.trim();
         if (t && t.length > 0) return t;
       }
-    } catch (_) {}
+    } catch (_) { }
   }
   return '';
 }
@@ -236,47 +237,47 @@ function extractCount(container, selectors) {
         const match = el.textContent.trim().replace(/,/g, '').match(/\d+/);
         if (match) return parseInt(match[0]);
       }
-    } catch (_) {}
+    } catch (_) { }
   }
   return 0;
 }
 
-function extractLikes(c)    { return extractCount(c, ['.social-details-social-counts__reactions-count','button[aria-label*="reaction"] span[aria-hidden="true"]','[data-testid="social-actions__reaction-count"]']); }
-function extractComments(c) { return extractCount(c, ['button[aria-label*="comment"] span[aria-hidden="true"]','[data-testid="social-actions__comments"] span[aria-hidden="true"]']); }
-function extractShares(c)   { return extractCount(c, ['button[aria-label*="repost"] span[aria-hidden="true"]','[data-testid="social-actions__reposts"] span[aria-hidden="true"]']); }
+function extractLikes(c) { return extractCount(c, ['.social-details-social-counts__reactions-count', 'button[aria-label*="reaction"] span[aria-hidden="true"]', '[data-testid="social-actions__reaction-count"]']); }
+function extractComments(c) { return extractCount(c, ['button[aria-label*="comment"] span[aria-hidden="true"]', '[data-testid="social-actions__comments"] span[aria-hidden="true"]']); }
+function extractShares(c) { return extractCount(c, ['button[aria-label*="repost"] span[aria-hidden="true"]', '[data-testid="social-actions__reposts"] span[aria-hidden="true"]']); }
 
 
 function processContainer(container, customKeywords, seen) {
   const description = extractDescription(container);
   if (!description || description.length < 10) return null;
 
-  
+
   const key = description.substring(0, 80);
   if (seen.has(key)) return null;
   seen.add(key);
 
-  const author   = extractAuthor(container);
+  const author = extractAuthor(container);
   const fullText = `${author} ${description}`;
 
-  
+
   if (!containsHiringKeyword(fullText, customKeywords)) return null;
 
-  
+
   const email = extractEmail(fullText);
   if (!email) return null;
 
   return {
     id: -1, // assigned by caller
     collectedAt: new Date().toISOString(),
-    postedAt:    extractTimestamp(container),
+    postedAt: extractTimestamp(container),
     author,
     authorTitle: extractAuthorTitle(container),
     description,
     email,
-    likes:    extractLikes(container),
+    likes: extractLikes(container),
     comments: extractComments(container),
-    shares:   extractShares(container),
-    postUrl:  extractPostUrl(container),
+    shares: extractShares(container),
+    postUrl: extractPostUrl(container),
     matchedKeywords: getMatchedKeywords(fullText, customKeywords),
   };
 }
@@ -288,28 +289,58 @@ function sendProgress(collected, target, scrollRound, status) {
       action: 'scrollProgress',
       collected, target, scrollRound, status
     });
-  } catch (_) {} 
+  } catch (_) { }
 }
 
 async function autoScrollAndCollect(targetCount, customKeywords) {
-  const posts   = [];
-  const seen    = new Set();
-  const MAX_SCROLL_ROUNDS = 30;  
-  const SCROLL_WAIT_MS    = 2200; 
-  const MAX_STALE_ROUNDS  = 3;
+  const posts = [];
+  const seen = new Set();           // deduplicates post text (used inside processContainer)
+  const processed = new WeakSet();  // tracks which DOM containers we've already counted
+  const MAX_SCROLL_ROUNDS = 60;     // more rounds so we keep scrolling until target is hit
+  const SCROLL_WAIT_MS = 2200;
+  const MAX_STALE_ROUNDS = 8;       // more patience — wait for new content to load
 
-  let scrollRound  = 0;
-  let staleRounds  = 0;
-  let method       = 'unknown';
-  let skipped      = 0;
+  let scrollRound = 0;
+  let staleRounds = 0;
+  let method = 'unknown';
+  let skipped = 0;
+
+  // Reset stop flag at start
+  window.__liStopCollecting = false;
 
   console.log(`[LI-Collector] Auto-scroll: target=${targetCount}`);
 
+  // Detect the correct scroll target (search pages use a custom scroll container)
+  function getScrollTarget() {
+    if (window.location.href.includes('/search/')) {
+      const candidates = [
+        document.querySelector('.scaffold-layout__main'),
+        document.querySelector('.search-results-container'),
+        document.querySelector('main'),
+      ];
+      for (const el of candidates) {
+        if (el && el.scrollHeight > el.clientHeight) return el;
+      }
+    }
+    return null; // use window
+  }
+
   while (posts.length < targetCount && scrollRound < MAX_SCROLL_ROUNDS) {
+    // Check if user requested stop
+    if (window.__liStopCollecting) {
+      console.log('[LI-Collector] Stop requested by user');
+      break;
+    }
     scrollRound++;
     sendProgress(posts.length, targetCount, scrollRound, 'scrolling');
 
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    // Scroll the correct container (search pages vs feed)
+    const scrollTarget = getScrollTarget();
+    if (scrollTarget) {
+      scrollTarget.scrollTo({ top: scrollTarget.scrollHeight, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
 
     await new Promise(r => setTimeout(r, SCROLL_WAIT_MS));
 
@@ -326,6 +357,11 @@ async function autoScrollAndCollect(targetCount, customKeywords) {
 
     for (const container of containers) {
       if (posts.length >= targetCount) break;
+
+      // Skip containers we've already processed in a previous round
+      if (processed.has(container)) continue;
+      processed.add(container);
+
       try {
         const post = processContainer(container, customKeywords, seen);
         if (post) {
@@ -347,11 +383,11 @@ async function autoScrollAndCollect(targetCount, customKeywords) {
       staleRounds++;
       console.log(`[LI-Collector] Stale round ${staleRounds}/${MAX_STALE_ROUNDS}`);
       if (staleRounds >= MAX_STALE_ROUNDS) {
-        console.log('[LI-Collector] No new posts after stale rounds — stopping scroll');
+        console.log('[LI-Collector] Page end reached — no new posts after stale rounds');
         break;
       }
     } else {
-      staleRounds = 0; 
+      staleRounds = 0;
     }
   }
 
@@ -376,9 +412,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     window.__liCollecting = true;
 
     const customKeywords = request.customKeywords || [];
-    const targetCount    = request.targetCount    || 10;
+    const targetCount = request.targetCount || 10;
 
-    
+
     autoScrollAndCollect(targetCount, customKeywords).then(({ posts, skipped, reason, method, scrollRounds }) => {
       window.__liCollecting = false;
 
@@ -402,15 +438,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const result = {
         success: true,
         data: {
-          collectedAt:     new Date().toISOString(),
-          url:             window.location.href,
-          pageType:        window.location.href.includes('/search/') ? 'search' : 'feed',
+          collectedAt: new Date().toISOString(),
+          url: window.location.href,
+          pageType: window.location.href.includes('/search/') ? 'search' : 'feed',
           detectionMethod: method,
           scrollRounds,
-          totalPosts:      posts.length,
-          skippedPosts:    skipped,
+          totalPosts: posts.length,
+          skippedPosts: skipped,
           targetCount,
-          keywords:        [...HIRING_KEYWORDS, ...customKeywords],
+          keywords: [...HIRING_KEYWORDS, ...customKeywords],
           posts
         }
       };
@@ -425,6 +461,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ success: false, message: 'Error: ' + err.message });
     });
 
+    return true;
+  }
+
+  if (request.action === 'stopCollect') {
+    window.__liStopCollecting = true;
+    window.__liCollecting = false;
+    sendResponse({ success: true });
     return true;
   }
 

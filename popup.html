@@ -45,6 +45,7 @@
       font-size: 18px;
       font-weight: 700;
       letter-spacing: 0.3px;
+      color: #ffffff;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -65,8 +66,9 @@
       font-weight: 600;
       border-bottom: 1px dotted rgba(255, 255, 255, 0.7);
       cursor: pointer;
-      display: inline-block;  /* ← ADD THIS */
-      padding: 2px 4px;      
+      display: inline-block;
+      /* ← ADD THIS */
+      padding: 2px 4px;
     }
 
     .header-link:hover {
@@ -318,6 +320,18 @@
     .btn-collect:hover:not(:disabled) {
       transform: translateY(-1px);
       box-shadow: 0 6px 20px rgba(0, 200, 83, 0.35);
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+      display: none;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
     }
 
     .btn-secondary {
@@ -614,6 +628,8 @@
           <button class="qs-btn" data-val="10">10</button>
           <button class="qs-btn" data-val="20">20</button>
           <button class="qs-btn" data-val="30">30</button>
+          <button class="qs-btn" data-val="40">40</button>
+          <button class="qs-btn" data-val="50">50</button>
         </div>
       </div>
     </div>
@@ -633,9 +649,12 @@
       </div>
     </div>
 
-        <!-- Collect button -->
+    <!-- Collect / Stop buttons -->
     <button id="collectBtn" class="btn btn-collect">
       🚀 Collect Hiring Posts
+    </button>
+    <button id="stopBtn" class="btn btn-stop">
+      ⏹ Stop Collecting
     </button>
 
     <div class="divider"></div>
@@ -666,6 +685,23 @@
           style="font-size: 11px; font-weight: 600; color: #4b5563; display: block; margin-bottom: 4px;">🎯 Target
           Role</label>
         <input type="text" id="roleInput" placeholder="e.g. Software Engineer" value="Software Engineer"
+          style="font-size: 12px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; box-sizing: border-box; transition:border-color 0.2s;">
+      </div>
+
+      <div style="margin-bottom: 8px;">
+        <label for="locationInput"
+          style="font-size: 11px; font-weight: 600; color: #4b5563; display: block; margin-bottom: 4px;">📍 Location
+          Filter <span style="font-weight:400; opacity:0.7;">(optional)</span></label>
+        <input type="text" id="locationInput" placeholder="e.g. India, Remote, Bangalore..."
+          style="font-size: 12px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; box-sizing: border-box; transition:border-color 0.2s;">
+      </div>
+
+      <div style="margin-bottom: 8px;">
+        <label for="experienceInput"
+          style="font-size: 11px; font-weight: 600; color: #4b5563; display: block; margin-bottom: 4px;">🧑‍💼
+          Experience
+          Level <span style="font-weight:400; opacity:0.7;">(optional)</span></label>
+        <input type="text" id="experienceInput" placeholder="e.g. 0-2 years, Senior, Fresher, 3+ years..."
           style="font-size: 12px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; box-sizing: border-box; transition:border-color 0.2s;">
       </div>
 
